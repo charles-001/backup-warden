@@ -328,7 +328,7 @@ class BackupWardenTestCase(unittest.TestCase):
         command = [
             "poetry",
             "run",
-            "warden",
+            "backup-warden",
             "--source=local",
             f"--path={self.root.name}",
             "--hourly=24",
@@ -390,7 +390,7 @@ class BackupWardenTestCase(unittest.TestCase):
         # Get the list of backups before run to compare after
         original_backups = set(os.listdir(self.root.name))
 
-        command = ["poetry", "run", "warden", "--delete", f"--config={self.config_file}"]
+        command = ["poetry", "run", "backup-warden", "--delete", f"--config={self.config_file}"]
         subprocess.run(command, check=True, cwd=Path(__file__).parent)
 
         # Get the list of backups that were preserved
@@ -454,7 +454,7 @@ class BackupWardenTestCase(unittest.TestCase):
         # Get the list of backups before run to compare after
         original_backups = set(os.listdir(self.root.name))
 
-        command = ["poetry", "run", "warden", "--delete", f"--config={self.config_file}"]
+        command = ["poetry", "run", "backup-warden", "--delete", f"--config={self.config_file}"]
         subprocess.run(command, check=True, cwd=Path(__file__).parent)
 
         # Get the list of backups that were preserved
@@ -524,7 +524,7 @@ class BackupWardenTestCase(unittest.TestCase):
         # Get the list of backups before run to compare after
         original_backups = set(os.listdir(self.root.name))
 
-        command = ["poetry", "run", "warden", "--delete", f"--config={self.config_file}"]
+        command = ["poetry", "run", "backup-warden", "--delete", f"--config={self.config_file}"]
         subprocess.run(command, check=True, cwd=Path(__file__).parent)
 
         # Get the list of backups that were preserved
@@ -573,7 +573,7 @@ class BackupWardenTestCase(unittest.TestCase):
         # Get the list of backups before run to compare after
         original_backups = set(os.listdir(self.root.name))
 
-        command = ["poetry", "run", "warden", "--delete", f"--config={self.config_file}"]
+        command = ["poetry", "run", "backup-warden", "--delete", f"--config={self.config_file}"]
         subprocess.run(command, check=True, cwd=Path(__file__).parent)
 
         # Get the list of backups that were preserved
@@ -650,7 +650,7 @@ class BackupWardenTestCase(unittest.TestCase):
         self.create_sample_backup_set(SAMPLE_BACKUP_SET)
         map = self.apply_mtime_and_rename(self.root.name, subdir)
 
-        command = ["poetry", "run", "warden", "--delete", f"--config={self.config_file}"]
+        command = ["poetry", "run", "backup-warden", "--delete", f"--config={self.config_file}"]
         subprocess.run(command, check=True, cwd=Path(__file__).parent)
 
         # Get the list of backups that were preserved
@@ -670,7 +670,7 @@ class BackupWardenTestCase(unittest.TestCase):
         command = [
             "poetry",
             "run",
-            "warden",
+            "backup-warden",
             f"--path={self.root.name}",
             "--hourly=3",
             "--daily=1",
@@ -692,7 +692,7 @@ class BackupWardenTestCase(unittest.TestCase):
         command = [
             "poetry",
             "run",
-            "warden",
+            "backup-warden",
             f"--path={self.root.name}",
             "--hourly=3",
             "--daily=1",
@@ -715,7 +715,7 @@ class BackupWardenTestCase(unittest.TestCase):
         command = [
             "poetry",
             "run",
-            "warden",
+            "backup-warden",
             f"--path={self.root.name}",
             "--hourly=1",
             "--prefer-recent",

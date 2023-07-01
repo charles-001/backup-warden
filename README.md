@@ -156,7 +156,7 @@ poetry run backup-warden --config config/example.ini
 
 ## Configuration
 
-Backup Warden offers two methods for setting it up: parameters and a config file. The recommended approach is to use a config file, which allows customization of directory paths and their respective retention policies. You can find examples of the config file [here](https://github.com/charles-001/backup-warden/tree/main/config)
+Backup Warden offers two methods for setting it up: parameters and a config file. The recommended approach is to use a config file, which allows customization of directory paths and their respective retention policies. You can find examples of the config file [here](https://github.com/charles-001/backup-warden/tree/main/example_configs)
 
 With a config file, each section represents a specific path containing backups to be rotated. Within each section, you can define the rotation scheme and other options. Please refer to the above information for detailed instructions on how to utilize pattern matching effectively when using the `path` option.
 
