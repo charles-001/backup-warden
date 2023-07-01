@@ -1,6 +1,6 @@
 # Backup Warden
 
-In today's digital landscape, every company is taking backups of their data (hopefully). However, these backups can quickly consume vast amounts of precious disk space and/or cloud storage, leading to substantial expenses depending on the volume of data involved. If you're seeking a solution to efficiently manage your backups while retaining only the ones you need based around retention policies you specify, then you've come to the right place! Backup Warden supervises and manages your backups, ensuring they remain in check while simplifying your overall data life cycle that enables smarter spending.
+In today's digital landscape, every company is taking backups of their data (hopefully). Unfortunately, these backups can quickly consume vast amounts of precious disk space and/or cloud storage leading to substantial expenses depending on the volume of data involved. If you're seeking a solution to efficiently manage your backups while retaining only the ones you need based around retention policies you specify, then you've come to the right place! Backup Warden supervises and manages your backups, ensuring they remain in check while simplifying your overall data life cycle that enables smarter utilization of resources.
 
 Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python-rotate-backups) that gave me a lot of inspiration for this project!
 
@@ -32,6 +32,8 @@ Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python
 | `--delete`                  | Commit to deleting backups (DANGER ZONE)                                                       | `False`                  |
 | `-V`, `--version`           | Display version and exit                                                                       |                          |
 | `-h`, `--help`              | Show this help message and exit                                                                |                          |
+
+**Note**: Boolean options such as `--filestat` can be specified as `yes`/`no`, `true`/`false`, or `1`/`0` in the config
 
 ### Additional Information for Options
 
@@ -92,15 +94,9 @@ If your backup file names are not standardized and do not follow a specific patt
 
 Backup Warden offers the `--relaxed` option to modify its default rotation behavior. By default, Backup Warden enforces strict time windows for each rotation scheme. However, with the `--relaxed` option, you can relax this enforcement. Here's a clear explanation of the difference between strict and relaxed rotation:
 
-- *Strict Rotation*: When the number of hourly backups to preserve is set to three, only backups created within the relevant time window (the hour of the most recent backup and the two hours leading up to it) will match the hourly frequency
+- **Strict Rotation**: When the number of hourly backups to preserve is set to three, only backups created within the relevant time window (the hour of the most recent backup and the two hours leading up to it) will match the hourly frequency. Choose this option if your backups are created at regular intervals without any missed intervals
 
-- *Relaxed Rotation*: With the `--relaxed` option enabled, the three most recent backups will all match the hourly frequency and be preserved, regardless of the calculated time window
-
-To determine whether you should customize this behavior, consider the following guidelines:
-
-- *Strict Rotation*: Choose this option if your backups are created at regular intervals without any missed intervals
-
-- *Relaxed Rotation*: Opt for the `--relaxed` option if your backups are created at irregular intervals, as it allows for the preservation of more backups
+- **Relaxed Rotation**: With the `--relaxed` option enabled, the three most recent backups will all match the hourly frequency and be preserved, regardless of the calculated time window. Choose this option if your backups are created at irregular intervals, as it allows for the preservation of more backups
 
 #### Option: `include-list`/`exclude-list`
 
@@ -127,7 +123,24 @@ Include functions in the opposite manner. If you want to only include specific b
 
 #### Option: `ssh-host`
 
-To establish an SSH connection, Backup Warden relies on your SSH config file (`~/.ssh/config`). You must set up the SSH config with the necessary host information. Aliases defined in the SSH config are also supported.
+To establish an SSH connection, Backup Warden relies on your SSH config file (`~/.ssh/config`). You must set up the SSH config with the necessary host information. Aliases defined in the SSH config along with jump hosts are also supported.
+
+## Installation & Execution
+
+Method 1:
+```shell
+pip install backup-warden
+
+backup-warden --config config/example.ini
+```
+
+Method 2:
+```shell
+pip install poetry
+poetry install
+
+poetry run warden --config config/example.ini
+```
 
 ## Configuration
 
@@ -144,13 +157,22 @@ Under the `[main]` section in the config file, you can set the following options
 - `source`
 - `environment`
 - `ssh_host`
-- `ssh_sudo` (boolean)
-- `syslog` (boolean)
+- `ssh_sudo`
+- `syslog`
 - `log_file`
 - `s3_endpoint_url`
 - `s3_access_key_id`
 - `s3_secret_access_key`
 - `slack_webhook`
+
+For each config `[path]` section, you can set the following options:
+
+- `hourly`, `daily`, `weekly`, `monthly`, `yearly`
+- `timestamp_pattern`
+- `include_list`/`exclude_list`
+- `filestat`
+- `relaxed`
+- `prefer_recent`
 
 You can also set the following options using environment variables, which will override the corresponding config values:
 
@@ -158,17 +180,6 @@ You can also set the following options using environment variables, which will o
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 - `SLACK_WEBHOOK`
-
-For each config `[path]` section, you can set the following options:
-
-- `hourly`, `daily`, `weekly`, `monthly`, `yearly`
-- `timestamp_pattern`
-- `include_list`/`exclude_list` (comma-separated values)
-- `filestat` (boolean)
-- `relaxed` (boolean)
-- `prefer_recent` (boolean)
-
-**Note**: Boolean values can be specified as `yes`/`no`, `true`/`false`, or `1`/`0`
 
 ### Not using `path`
 
@@ -241,41 +252,25 @@ By defining `/path/backups/*/logical` as a config section, Backup Warden acknowl
 
 When a retention policy is set for a broader path, such as `path/backups`, it will not override or take precedence over a more specific path like `/path/backups/cluster1/logical`. Backup Warden's scanning and rotation operations respect the defined hierarchy, ensuring that retention policies are accurately applied to the corresponding backup directories without unintentionally affecting others.
 
-## Installation
-
-```shell
-pip install poetry
-poetry install
-```
-
-Once those are installed, you'll just need to setup the required configs/parameters. Note for S3, you'll need to export the necessary environment variables if they apply.
-
-Execution (dry-run):
-
-```shell
-poetry run warden --config config/development.ini
-poetry run warden --config config/production.ini
-```
-
 ## Additional Features
 
 ### Alerting
 
 Backup Warden offers a convenient Slack integration feature that allows you to stay informed about your backups if you specify a Slack Webhook URL. Benefit from the following alerts:
 
-1. *Non-Backup Alert*: Get notified if a path hasn't been backed up within the last 24 hours
-2. *Success Alert*: Receive notifications after a successful execution, along with detailed statistics about the deleted backups
-3. *Failure Alert*: In case of a failed execution, be promptly notified to address any potential issues
+1. **Non-Backup Alert**: Get notified if a path hasn't been backed up within the last 24 hours
+2. **Success Alert**: Receive notifications after a successful execution, along with detailed statistics about the deleted backups
+3. **Failure Alert**: In case of a failed execution, be promptly notified to address any potential issues
 
 
 ## Functionality Overview
 
 Backup Warden employs the following steps to carry out the backup rotation process:
-1. *Specify Paths*: You need to provide a `path` and/or use config sections for paths to inform Backup Warden about the locations where the backups are stored
-2. *Scan for Backups*: Backup Warden scans each specified path to locate backups. These backups can be in the form of either directories or files. Backup Warden identifies backups by searching for timestamps in their names. If you're using `filestat`, it will not look for a timestamp, but what you specify in place of it
-3. *Apply Rotation Scheme*: Backup Warden applies the defined rotation scheme to the identified backups. If the outcome doesn't align with your expectations, you can experiment with the `relaxed` and/or `prefer-recent` options to achieve the desired behavior
-4. *Backup Deletion*: Backups that are determined to be rotated based on the rotation scheme will be deleted if the `delete` option is passed. If it isn't, Backup Warden will skip the deletion step and preserve the rotated backups 
+1. **Specify Paths**: You need to provide a `path` and/or use config sections for paths to inform Backup Warden about the locations where the backups are stored
+2. **Scan for Backups**: Backup Warden scans each specified path to locate backups. These backups can be in the form of either directories or files. Backup Warden identifies backups by searching for timestamps in their names. If you're using `filestat`, it will not look for a timestamp, but what you specify in place of it
+3. **Apply Rotation Scheme**: Backup Warden applies the defined rotation scheme to the identified backups. If the outcome doesn't align with your expectations, you can experiment with the `relaxed` and/or `prefer-recent` options to achieve the desired behavior
+4. **Backup Deletion**: Backups that are determined to be rotated based on the rotation scheme will be deleted if the `delete` option is passed. If it isn't, Backup Warden will skip the deletion step and preserve the rotated backups 
 
 
 ## Output Example
-<img width="1542" alt="Screenshot" src="https://github.com/charles-001/backup-warden/assets/13244625/a028283f-1490-468e-8f92-58c89f349331">
+<img width="1598" alt="Screenshot 2023-07-01 at 3 50 57 AM" src="https://github.com/charles-001/backup-warden/assets/13244625/eda58941-605f-482a-8800-77f3a1086838">
