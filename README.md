@@ -252,28 +252,6 @@ By defining `/path/backups/*/logical` as a config section, Backup Warden acknowl
 
 When a retention policy is set for a broader path, such as `path/backups`, it will not override or take precedence over a more specific path like `/path/backups/cluster1/logical`. Backup Warden's scanning and rotation operations respect the defined hierarchy, ensuring that retention policies are accurately applied to the corresponding backup directories without unintentionally affecting others.
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-## Installation
-
-```shell
-pip install poetry
-poetry install
-```
-
-Once those are installed, you'll just need to setup the required configs/parameters. Note for S3, you'll need to export the necessary environment variables if they apply.
-
-Execution (dry-run):
-
-```shell
-poetry run backup-warden --config config/development.ini
-poetry run backup-warden --config config/production.ini
-```
-
->>>>>>> 2a53d7e (Fixing packaging)
-=======
->>>>>>> 1c490b4 (Fixing packaging)
 ## Additional Features
 
 ### Alerting
@@ -295,8 +273,4 @@ Backup Warden employs the following steps to carry out the backup rotation proce
 
 
 ## Output Example
-<<<<<<< HEAD
 <img width="1598" alt="Screenshot 2023-07-01 at 3 50 57 AM" src="https://github.com/charles-001/backup-warden/assets/13244625/eda58941-605f-482a-8800-77f3a1086838">
-=======
-<img width="1598" alt="Screenshot 2023-07-01 at 3 50 57 AM" src="https://github.com/charles-001/backup-warden/assets/13244625/eda58941-605f-482a-8800-77f3a1086838">
->>>>>>> 1c490b4 (Fixing packaging)
