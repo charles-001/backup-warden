@@ -1,6 +1,6 @@
 # Backup Warden
 
-In today's digital landscape, every company is taking backups of their data (hopefully). Unfortunately, these backups can quickly consume vast amounts of precious disk space and/or cloud storage leading to substantial expenses depending on the volume of data involved. If you're seeking a solution to efficiently manage your backups while retaining only the ones you need based around retention policies you specify, then you've come to the right place! Backup Warden supervises and manages your backups, ensuring they remain in check while simplifying your overall data life cycle that enables smarter utilization of resources.
+In today's digital landscape, every business is taking backups of their precious data (hopefully). Unfortunately, these backups can quickly consume vast amounts of disk space and/or cloud storage leading to substantial financial expenses depending on the volume of data involved. If you're seeking a solution to efficiently manage your backups while retaining only the ones you need based around retention policies you specify, then you've come to the right place! Backup Warden supervises and manages your backups, ensuring they remain in check while simplifying your overall data life cycle that enables smarter utilization of resources.
 
 Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python-rotate-backups) that gave me a lot of inspiration for this project!
 
@@ -14,7 +14,7 @@ Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python
 | `--monthly`                 | Number of monthly backups to preserve                                                          | `12`                     |
 | `--yearly`                  | Number of yearly backups to preserve                                                           | `always`                 |
 | `-c`, `--config`            | Location of the config file                                                                    | `/etc/backup_warden.ini` |
-| `-s`, `--source`            | Source of where the backups are stored. Select from: `local`, `ssh`, `s3`                       | `local`                  |
+| `-s`, `--source`            | Source of where the backups are stored. Select from: `local`, `ssh`, `s3`                      | `local`                  |
 | `-b`, `--bucket`            | Name of the AWS S3 bucket                                                                      |                          |
 | `-p`, `--path`              | Specify a path to traverse all directories it contains for granular retention policies         |                          |
 | `-e`, `--environment`       | Environment the backups are rotated in (used for Slack alert only)                             |                          |
@@ -42,6 +42,18 @@ Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python
 - These options determine the number of backups to retain for each respective frequency
 - You have the flexibility to provide an expression that will be evaluated to calculate a value. For example, using `--hourly=5+2` would result in 7
 - Alternatively, you can specify "always" as the value to preserve all backups for that particular frequency
+
+#### Option: `source`
+There are currently three available sources, each functioning differently when scanning directories to find backups.
+
+- `local`
+This option is straightforward and doesn't really require any additional explanation. It is a simple method for locating backups
+
+- `ssh`
+Backup Warden establishes an SSH connection using your SSH config file (`~/.ssh/config`). To use this option, you need to configure the SSH config file with the relevant host information. It also supports aliases defined in the SSH config, as well as jump hosts
+
+- `s3`
+One thing to note is the `s3_endpoint_url` option. This lets you specify an endpoint other than the default to be able to use an alternative like DigitalOcean Spaces (i.e. `https://nyc3.digitaloceanspaces.com`)
 
 #### Option: `path`
 
@@ -121,9 +133,6 @@ exclude_list = *cluster1*, *2022*
 
 Include functions in the opposite manner. If you want to only include specific backups, you can utilize this feature. It can be used as a command-line argument using `--include-list`, or as the `include_list` option in a config path section.
 
-#### Option: `ssh-host`
-
-To establish an SSH connection, Backup Warden relies on your SSH config file (`~/.ssh/config`). You must set up the SSH config with the necessary host information. Aliases defined in the SSH config along with jump hosts are also supported.
 
 ## Installation & Execution
 
@@ -139,7 +148,7 @@ Method 2:
 pip install poetry
 poetry install
 
-poetry run warden --config config/example.ini
+poetry run backup-warden --config config/example.ini
 ```
 
 ## Configuration

@@ -6,8 +6,6 @@
 # Created on: July 1, 2023
 # GitHub: https://github.com/charles-001/backup-warden
 
-# Inspiration from https://github.com/xolox/python-rotate-backups
-
 import argparse
 import os
 import sys
