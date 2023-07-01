@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "backup_warden"
-version = "1.0.0"
+version = "1.0.2"
 description = "Streamline your backup management with ease and simplicity"
 authors = ["Charles Thompson <01charles.t@gmail.com>"]
 readme = "README.md"
@@ -22,4 +22,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-warden = "backup_warden:main"
+backup-warden = "backup_warden.app:main"

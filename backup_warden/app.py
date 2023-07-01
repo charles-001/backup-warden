@@ -14,7 +14,7 @@ import sys
 from importlib import metadata
 from logging.handlers import SysLogHandler
 
-from BackupWarden import (
+from backup_warden import (
     SOURCE_LOCAL,
     SOURCE_TYPES,
     BackupWarden,
