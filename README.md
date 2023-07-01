@@ -60,13 +60,13 @@ One thing to note is the `s3_endpoint_url` option. This lets you specify an endp
 
 #### Option: `path`
 
-**Config**
+**Using Config File**
 
 When `path` is used under the `[main]` section in config, it significantly alters Backup Warden's functionality. In this case, Backup Warden will traverse through every directory and file under the given path until it locates a backup. Once a backup is found, it associates the backup with a config section using `fnmatch` for pattern matching that defines its retention policy. If there isn't a config section that matches all possibilities of a path found, it's ignored. If `path` is not specified, Backup Warden will only scan the path defined in each config section.
 
 Using the `path` option provides granular control over retention policies and allows for flexible path name conventions. It enables you to define custom retention rules based on very specific paths. 
 
-**Parameter**
+**Using Parameters**
 
 `--path` is the same as using `path` under `[main]` section in config.
 
@@ -156,7 +156,7 @@ poetry run backup-warden --config config/example.ini
 
 ## Configuration
 
-Backup Warden offers two methods for setting it up: parameters and a config file. The recommended approach is to use a config file, which allows customization of directory paths and their respective retention policies. You can find an example config file [here](https://github.com/charles-001/backup-warden/blob/main/config/example.ini).
+Backup Warden offers two methods for setting it up: parameters and a config file. The recommended approach is to use a config file, which allows customization of directory paths and their respective retention policies. You can find examples of the config file [here](https://github.com/charles-001/backup-warden/tree/main/config)
 
 With a config file, each section represents a specific path containing backups to be rotated. Within each section, you can define the rotation scheme and other options. Please refer to the above information for detailed instructions on how to utilize pattern matching effectively when using the `path` option.
 
