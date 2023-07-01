@@ -47,12 +47,15 @@ Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python
 There are currently three available sources, each functioning differently when scanning directories to find backups.
 
 - `local`
+
 This option is straightforward and doesn't really require any additional explanation. It is a simple method for locating backups
 
 - `ssh`
-Backup Warden establishes an SSH connection using your SSH config file (`~/.ssh/config`). To use this option, you need to configure the SSH config file with the relevant host information. It also supports aliases defined in the SSH config, as well as jump hosts
+
+To use this source, you need to configure the SSH config file (`~/.ssh/config`) with the relevant host information. It also supports aliases defined in the SSH config, as well as jump hosts
 
 - `s3`
+
 One thing to note is the `s3_endpoint_url` option. This lets you specify an endpoint other than the default to be able to use an alternative like DigitalOcean Spaces (i.e. `https://nyc3.digitaloceanspaces.com`)
 
 #### Option: `path`
@@ -261,14 +264,13 @@ By defining `/path/backups/*/logical` as a config section, Backup Warden acknowl
 
 When a retention policy is set for a broader path, such as `path/backups`, it will not override or take precedence over a more specific path like `/path/backups/cluster1/logical`. Backup Warden's scanning and rotation operations respect the defined hierarchy, ensuring that retention policies are accurately applied to the corresponding backup directories without unintentionally affecting others.
 
-## Additional Features
 
-### Alerting
+## Alerting
 
 Backup Warden offers a convenient Slack integration feature that allows you to stay informed about your backups if you specify a Slack Webhook URL. Benefit from the following alerts:
 
-1. **Non-Backup Alert**: Get notified if a path hasn't been backed up within the last 24 hours
-2. **Success Alert**: Receive notifications after a successful execution, along with detailed statistics about the deleted backups
+1. **Non-Backup Alert**: Get notified if a path doesn't have a backup in the past 24 hours
+2. **Success Alert**: Receive notification after a successful execution, along with detailed statistics about what it did
 3. **Failure Alert**: In case of a failed execution, be promptly notified to address any potential issues
 
 
