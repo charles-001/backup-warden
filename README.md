@@ -148,7 +148,8 @@ backup-warden --config config/example.ini
 
 Using Poetry:
 ```shell
-pip install poetry
+curl -sSL https://install.python-poetry.org | python3 -
+
 poetry install
 
 poetry run backup-warden --config config/example.ini
