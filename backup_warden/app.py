@@ -199,7 +199,7 @@ def setup_options():
         "--timestamp-pattern",
         type=str,
         default="",
-        help="The timestamp pattern to parse out of filenames",
+        help="The timestamp pattern using a regex expression to parse out of filenames",
     )
     parser.add_argument(
         "-l",

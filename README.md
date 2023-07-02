@@ -18,7 +18,7 @@ Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python
 | `-b`, `--bucket`            | Name of the AWS S3 bucket                                                                      |                          |
 | `-p`, `--path`              | Specify a path to traverse all directories it contains for granular retention policies         |                          |
 | `-e`, `--environment`       | Environment the backups are rotated in (used for Slack alert only)                             |                          |
-| `-t`, `--timestamp-pattern` | The timestamp pattern to parse out of filenames                                                |                          |
+| `-t`, `--timestamp-pattern` | The timestamp pattern using a regex expression to parse out of filenames                       |                          |
 | `-l`, `--log-file`          | Enable logging to this file path                                                               |                          |
 | `-I`, `--include`           | Include backups based on their directory path and/or filename (separated by comma)             |                          |
 | `-E`, `--exclude`           | Exclude backups based on their directory path and/or filename (separated by comma)             |                          |
