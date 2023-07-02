@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "backup_warden"
-version = "1.0.3"
+version = "1.0.4"
 description = "Streamline your backup management with ease and simplicity"
 authors = ["Charles Thompson <01charles.t@gmail.com>"]
 readme = "README.md"
@@ -16,6 +16,8 @@ property-manager = "^3.0"
 paramiko = "^3.2.0"
 fabric = "^3.1.0"
 simpleeval = "^0.9.13"
+requests = "^2.31.0"
+packaging = "^23.1"
 
 [build-system]
 requires = ["poetry-core"]

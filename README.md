@@ -1,6 +1,6 @@
 # Backup Warden
 
-In today's digital landscape, every business is taking backups of their precious data (hopefully). Unfortunately, these backups can quickly consume vast amounts of disk space and/or cloud storage leading to substantial financial expenses depending on the volume of data involved. If you're seeking a solution to efficiently manage your backups while retaining only the ones you need based around retention policies you specify, then you've come to the right place! Backup Warden supervises and manages your backups, ensuring they remain in check while simplifying your overall data life cycle that enables smarter utilization of resources.
+In today's digital landscape, every business is taking backups of their data (hopefully). These backups can be challenging as they often require substantial disk space and/or cloud storage that can lead to significant financial expenses. If you're in search of a solution to handle your backups and retain only the necessary ones according to your retention policies, look no further! With Backup Warden, it will supervise and maintain your backups simplifying your overall data life cycle and enabling you to have smarter resource utilization.
 
 Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python-rotate-backups) that gave me a lot of inspiration for this project!
 

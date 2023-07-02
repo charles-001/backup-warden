@@ -12,6 +12,7 @@ import sys
 from importlib import metadata
 from logging.handlers import SysLogHandler
 
+import requests
 from backup_warden import (
     SOURCE_LOCAL,
     SOURCE_TYPES,
@@ -22,10 +23,13 @@ from backup_warden import (
     slack_notify,
 )
 from loguru import logger
+from packaging.version import parse as parse_version
 
 try:
+    __package_name__ = metadata.metadata(__package__ or __name__)["Name"]
     __version__ = metadata.version(__package__ or __name__)
 except Exception:
+    __package_name__ = "N/A"
     __version__ = "N/A"
 
 
@@ -74,11 +78,37 @@ def setup_logging(args):
         logger.add(args.log_file, format=log_format, backtrace=True, level=log_level, colorize=False)
 
 
+def check_for_update():
+    # Query PyPI API to get the latest version
+    url = f"https://pypi.org/pypi/{__package_name__}/json"
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        data = response.json()
+
+        # Extract the latest version from the response
+        latest_version = data["info"]["version"]
+
+        # Compare the current version with the latest version
+        if parse_version(latest_version) > parse_version(__version__):
+            logger.opt(colors=True).info(
+                f"<green>New version available!</green>\n\nCurrent version: <cyan>{__version__}</cyan>\nLatest version:"
+                f" <cyan>{latest_version}</cyan>\n\nPlease update to the latest version at your convenience"
+            )
+    else:
+        logger.error(
+            f"Failed to retrieve package information from PyPI! URL: {url} - Code: {response.status_code} - Response:"
+            f" {response.json()}"
+        )
+
+
 def main():
     options = vars(setup_options())
     backup_warden = None
 
     try:
+        check_for_update()
+
         # Create rotation scheme and remove from options so they don't get sent to BackupWarden
         rotation_scheme = {
             frequency: parse_timestamp_frequency(options.pop(frequency, None))
@@ -279,7 +309,8 @@ def setup_options():
                             )
                         )
 
-            main_args = argparse.Namespace(
+            # Overwrite parameter values/defaults with config file values
+            config_options = argparse.Namespace(
                 bucket=main_config.get("bucket"),
                 path=main_config.get("path"),
                 environment=main_config.get("environment"),
@@ -293,7 +324,7 @@ def setup_options():
                 s3_access_key_id=main_config.get("s3_access_key_id"),
                 s3_secret_access_key=main_config.get("s3_secret_access_key"),
             )
-            args.__dict__.update(main_args.__dict__)
+            args.__dict__.update(config_options.__dict__)
     else:
         if not args.path:
             sys.exit(logger.critical("A path must be specified"))
