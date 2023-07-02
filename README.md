@@ -139,14 +139,14 @@ Include functions in the opposite manner. If you want to only include specific b
 
 ## Installation & Execution
 
-Method 1:
+Using PyPi:
 ```shell
 pip install backup-warden
 
 backup-warden --config config/example.ini
 ```
 
-Method 2:
+Using Poetry:
 ```shell
 pip install poetry
 poetry install
