@@ -138,6 +138,7 @@ Include functions in the opposite manner. If you want to only include specific b
 
 
 ## Installation & Execution
+Must be using Python 3.8+
 
 Using PyPi:
 ```shell
