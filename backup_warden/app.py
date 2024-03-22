@@ -112,7 +112,7 @@ def main():
         # Create rotation scheme and remove from options so they don't get sent to BackupWarden
         rotation_scheme = {
             frequency: parse_timestamp_frequency(options.pop(frequency, None))
-            for frequency in ("hourly", "daily", "weekly", "monthly", "yearly")
+            for frequency in ("minutely", "hourly", "daily", "weekly", "monthly", "yearly")
         }
 
         # Create our parameter config as a default
@@ -124,6 +124,7 @@ def main():
             include_list=options.pop("include_list"),
             exclude_list=options.pop("exclude_list"),
             relaxed=options.pop("relaxed"),
+            utc=options.pop("utc"),
             prefer_recent=options.pop("prefer_recent"),
         )
 
@@ -254,6 +255,9 @@ def setup_options():
         help="Time windows are not enforced (see documentation for more information)",
     )
     parser.add_argument(
+        "--utc", action="store_true", help="Use UTC timezone instead of local machine's timezone for timestamps"
+    )
+    parser.add_argument(
         "--syslog",
         dest="syslog",
         action="store_true",
@@ -273,6 +277,7 @@ def setup_options():
 
     retention_group = parser.add_argument_group("Retention options")
     retention_options = [
+        ("minutely", "Number of minutely backups to preserve", 0),
         ("hourly", "Number of hourly backups to preserve", 72),
         ("daily", "Number of daily backups to preserve", 7),
         ("weekly", "Number of weekly backups to preserve", 6),

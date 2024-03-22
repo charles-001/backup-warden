@@ -13,7 +13,7 @@ import re
 import shutil
 from configparser import ConfigParser
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fnmatch import fnmatch
 from pathlib import Path
 from pprint import pformat
@@ -42,6 +42,7 @@ A dictionary with rotation frequency names (strings) as keys and
 :class:`~dateutil.relativedelta.relativedelta` objects as values.
 """
 SUPPORTED_FREQUENCIES = {
+    "minutely": relativedelta(minutes=1),
     "hourly": relativedelta(hours=1),
     "daily": relativedelta(days=1),
     "weekly": relativedelta(weeks=1),
@@ -91,6 +92,7 @@ class Warden_Config:
     relaxed: bool = False
     filestat: bool = False
     prefer_recent: bool = False
+    utc: bool = False
 
     def __post_init__(self):
         self.timestamp_pattern = compile_timestamp_pattern(self.timestamp_pattern, self.filestat)
@@ -239,6 +241,11 @@ class BackupWarden:
 
         backup_name = backup_path.name
 
+        if config.utc:
+            specified_timezone = timezone.utc
+        else:
+            specified_timezone = datetime.now().astimezone().tzinfo
+
         timestamp_extract = config.timestamp_pattern.search(backup_name)
         if timestamp_extract:
             unixtime = timestamp_extract.groupdict().get("unixtime")
@@ -247,19 +254,19 @@ class BackupWarden:
                 # Support seconds and milliseconds-precision timestamps
                 for time in (unixtime, unixtime / 1000):
                     try:
-                        return datetime.fromtimestamp(time)
+                        return datetime.fromtimestamp(time, tz=specified_timezone)
                     except ValueError:
                         pass
 
                 logger.debug(f"Unable to parse unix timestamp from {backup_path}")
             elif config.filestat:
                 if self.source in (SOURCE_LOCAL, SOURCE_SSH):
-                    return datetime.fromtimestamp(int(last_modified))
+                    return datetime.fromtimestamp(int(last_modified), tz=specified_timezone)
                 elif self.source == SOURCE_S3:
                     return last_modified.replace(tzinfo=None)
             else:
                 try:
-                    return datetime(*map(int, timestamp_extract.groups("0")))
+                    return datetime(*map(int, timestamp_extract.groups("0")), tzinfo=specified_timezone)
                 except ValueError:
                     pass
 
@@ -530,6 +537,7 @@ class BackupWarden:
                 rotation frequency.
         """
         frequency_key_mapping = {
+            "minutely": lambda b: (b.year, b.month, b.day, b.hour, b.minute),
             "hourly": lambda b: (b.year, b.month, b.day, b.hour),
             "daily": lambda b: (b.year, b.month, b.day),
             "weekly": lambda b: (b.year, b.week),
@@ -542,7 +550,7 @@ class BackupWarden:
         for b in backups:
             for frequency, key_mapping in frequency_key_mapping.items():
                 # If frequency is set to 0, don't add it
-                if self.config.rotation_scheme[frequency] != 0:
+                if self.config.rotation_scheme.get(frequency) != 0:
                     key = key_mapping(b)
                     backups_by_frequency[frequency].setdefault(key, []).append(b)
 
@@ -583,14 +591,16 @@ class BackupWarden:
                 retention_period = rotation_scheme[frequency]
 
                 if retention_period != "always":
+                    # Remove backups created before the minimum date of this
+                    # rotation frequency? (relative to the most recent backup)
                     if not self.config.relaxed:
                         minimum_date = most_recent_backup - SUPPORTED_FREQUENCIES[frequency] * retention_period
-                        for period, backups_in_period in list(backups.items()):
+                        for backup, backups_in_period in list(backups.items()):
                             backups_in_period[:] = [
                                 backup for backup in backups_in_period if backup.timestamp >= minimum_date
                             ]
                             if not backups_in_period:
-                                backups.pop(period)
+                                backups.pop(backup)
 
                     # If there are more periods remaining than the user
                     # requested to be preserved we delete the oldest one(s).
@@ -655,7 +665,7 @@ class BackupWarden:
                 self.apply_rotation_scheme(backups_by_frequency, most_recent_backup.timestamp)
                 backups_to_preserve = self.find_preservation_criteria(backups_by_frequency)
 
-                if most_recent_backup.timestamp < (datetime.utcnow() - timedelta(1)):
+                if most_recent_backup.timestamp < (datetime.now(timezone.utc) - timedelta(1)):
                     no_backups_24hrs.append(path_name)
                     warning_message = (
                         f"No backup taken for path {path_name} in the past 24 hours! Most recent backup:"
@@ -760,15 +770,17 @@ class BackupWarden:
                         f"Total: {path_backup_files_count}",
                         "",
                         convert_bytes(path_backup_size),
-                        "All backups preserved"
-                        if not path_backup_deleted_files_count
-                        else (
-                            f"Deleted {path_backup_deleted_files_count} backups totaling"
-                            f" {convert_bytes(path_backup_deleted_size)}"
-                            if self.delete
+                        (
+                            "All backups preserved"
+                            if not path_backup_deleted_files_count
                             else (
                                 f"Deleted {path_backup_deleted_files_count} backups totaling"
-                                f" {convert_bytes(path_backup_deleted_size)} (skipped)"
+                                f" {convert_bytes(path_backup_deleted_size)}"
+                                if self.delete
+                                else (
+                                    f"Deleted {path_backup_deleted_files_count} backups totaling"
+                                    f" {convert_bytes(path_backup_deleted_size)} (skipped)"
+                                )
                             )
                         ),
                     ]
@@ -886,7 +898,7 @@ def load_config_file(configuration_file, app_config=False):
             rotation_scheme = {
                 name: parse_timestamp_frequency(config.get(section, name, fallback=""))
                 for name in SUPPORTED_FREQUENCIES
-                if config.get(section, name)
+                if config.get(section, name, fallback=None)
             }
 
             config_options = {"config_name": section, "rotation_scheme": rotation_scheme}

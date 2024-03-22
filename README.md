@@ -8,6 +8,7 @@ Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python
 
 | Option                      | Description                                                                                    | Default Value            |
 | --------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------ |
+| `--minutely`                | Number of minutely backups to preserve                                                         | `0`                      |
 | `--hourly`                  | Number of hourly backups to preserve                                                           | `72`                     |
 | `--daily`                   | Number of daily backups to preserve                                                            | `7`                      |
 | `--weekly`                  | Number of weekly backups to preserve                                                           | `6`                      |
@@ -27,6 +28,7 @@ Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python
 | `--filestat`                | Use the file's last modified date instead of parsing timestamp from filename                   | `False`                  |
 | `--prefer-recent`           | Keep the most recent backup in each time slot instead of oldest                                | `False`                  |
 | `--relaxed`                 | Time windows are not enforced                                                                  | `False`                  |
+| `--utc`                     | Use UTC timezone instead of local machine's timezone for timestamps                            | `False`                  |
 | `--syslog`                  | Use syslog                                                                                     | `False`                  |
 | `--debug`                   | Log debug messages that can help troubleshoot                                                  | `False`                  |
 | `--delete`                  | Commit to deleting backups (DANGER ZONE)                                                       | `False`                  |
@@ -37,7 +39,7 @@ Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python
 
 ### Additional Information for Options
 
-#### Option: `hourly`, `daily`, `weekly`, `monthly`, `yearly`
+#### Option: `minutely`, `hourly`, `daily`, `weekly`, `monthly`, `yearly`
 
 - These options determine the number of backups to retain for each respective frequency
 - You have the flexibility to provide an expression that will be evaluated to calculate a value. For example, using `--hourly=5+2` would result in 7
@@ -107,7 +109,7 @@ If your backup file names are not standardized and do not follow a specific patt
 
 #### Option: `relaxed`
 
-Backup Warden offers the `--relaxed` option to modify its default rotation behavior. By default, Backup Warden enforces strict time windows for each rotation scheme. However, with the `--relaxed` option, you can relax this enforcement. Here's a clear explanation of the difference between strict and relaxed rotation:
+Backup Warden offers the `--relaxed` option to modify its default rotation behavior. By default, Backup Warden enforces strict time windows for each rotation scheme. However, with the `--relaxed` option, you can relax this enforcement. Here's a clear explanation/example of the difference between strict and relaxed rotation:
 
 - **Strict Rotation**: When the number of hourly backups to preserve is set to three, only backups created within the relevant time window (the hour of the most recent backup and the two hours leading up to it) will match the hourly frequency. Choose this option if your backups are created at regular intervals without any missed intervals
 
@@ -181,7 +183,7 @@ Under the `[main]` section in the config file, you can set the following options
 
 For each config `[path]` section, you can set the following options:
 
-- `hourly`, `daily`, `weekly`, `monthly`, `yearly`
+- `minutely`, `hourly`, `daily`, `weekly`, `monthly`, `yearly`
 - `timestamp_pattern`
 - `include_list`/`exclude_list`
 - `filestat`
