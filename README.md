@@ -189,6 +189,7 @@ For each config `[path]` section, you can set the following options:
 - `filestat`
 - `relaxed`
 - `prefer_recent`
+- `utc`
 
 You can also set the following options using environment variables, which will override the corresponding config values:
 
