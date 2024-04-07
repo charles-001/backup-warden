@@ -1,23 +1,23 @@
 [tool.poetry]
 name = "backup_warden"
-version = "1.0.6"
+version = "1.0.7"
 description = "Streamline your backup management with ease and simplicity"
 authors = ["Charles Thompson <01charles.t@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-boto3 = "^1.26.146"
+boto3 = "^1.34.79"
 tabulate = "^0.9.0"
-slack-sdk = "^3.21.3"
-loguru = "^0.7.0"
-configparser = "^5.3.0"
+slack-sdk = "^3.27.1"
+loguru = "^0.7.2"
+configparser = "^6.0.1"
 property-manager = "^3.0"
-paramiko = "^3.2.0"
-fabric = "^3.1.0"
+paramiko = "^3.4.0"
+fabric = "^3.2.2"
 simpleeval = "^0.9.13"
 requests = "^2.31.0"
-packaging = "^23.1"
+packaging = "^24.0"
 
 [build-system]
 requires = ["poetry-core"]
