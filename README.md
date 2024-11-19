@@ -6,34 +6,34 @@ Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python
 
 ## Usage
 
-| Option                      | Description                                                                                    | Default Value            |
-| --------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------ |
-| `--minutely`                | Number of minutely backups to preserve                                                         | `0`                      |
-| `--hourly`                  | Number of hourly backups to preserve                                                           | `72`                     |
-| `--daily`                   | Number of daily backups to preserve                                                            | `7`                      |
-| `--weekly`                  | Number of weekly backups to preserve                                                           | `6`                      |
-| `--monthly`                 | Number of monthly backups to preserve                                                          | `12`                     |
-| `--yearly`                  | Number of yearly backups to preserve                                                           | `always`                 |
-| `-c`, `--config`            | Location of the config file                                                                    | `/etc/backup_warden.ini` |
-| `-s`, `--source`            | Source of where the backups are stored. Select from: `local`, `ssh`, `s3`                      | `local`                  |
-| `-b`, `--bucket`            | Name of the AWS S3 bucket                                                                      |                          |
-| `-p`, `--path`              | Specify a path to traverse all directories it contains for granular retention policies         |                          |
-| `-e`, `--environment`       | Environment the backups are rotated in (used for Slack alert only)                             |                          |
-| `-t`, `--timestamp-pattern` | The timestamp pattern using a regex expression to parse out of filenames                       |                          |
-| `-l`, `--log-file`          | Enable logging to this file path                                                               |                          |
-| `-I`, `--include`           | Include backups based on their directory path and/or filename (separated by comma)             |                          |
-| `-E`, `--exclude`           | Exclude backups based on their directory path and/or filename (separated by comma)             |                          |
-| `-H`, `--ssh-host`          | SSH host/alias to use                                                                          |                          |
-| `--ssh-sudo`                | Wrap SSH commands with sudo for escalated privileges                                           | `False`                  |
-| `--filestat`                | Use the file's last modified date instead of parsing timestamp from filename                   | `False`                  |
-| `--prefer-recent`           | Keep the most recent backup in each time slot instead of oldest                                | `False`                  |
-| `--relaxed`                 | Time windows are not enforced                                                                  | `False`                  |
-| `--utc`                     | Use UTC timezone instead of local machine's timezone for timestamps                            | `False`                  |
-| `--syslog`                  | Use syslog                                                                                     | `False`                  |
-| `--debug`                   | Log debug messages that can help troubleshoot                                                  | `False`                  |
-| `--delete`                  | Commit to deleting backups (DANGER ZONE)                                                       | `False`                  |
-| `-V`, `--version`           | Display version and exit                                                                       |                          |
-| `-h`, `--help`              | Show this help message and exit                                                                |                          |
+| Option                      | Description                                                                            | Default Value            |
+|-----------------------------|----------------------------------------------------------------------------------------|--------------------------|
+| `--minutely`                | Number of minutely backups to preserve                                                 | `0`                      |
+| `--hourly`                  | Number of hourly backups to preserve                                                   | `72`                     |
+| `--daily`                   | Number of daily backups to preserve                                                    | `7`                      |
+| `--weekly`                  | Number of weekly backups to preserve                                                   | `6`                      |
+| `--monthly`                 | Number of monthly backups to preserve                                                  | `12`                     |
+| `--yearly`                  | Number of yearly backups to preserve                                                   | `always`                 |
+| `-c`, `--config`            | Location of the config file                                                            | `/etc/backup_warden.ini` |
+| `-s`, `--source`            | Source of where the backups are stored. Select from: `local`, `ssh`, `s3`              | `local`                  |
+| `-b`, `--bucket`            | Name of the AWS S3 bucket                                                              |                          |
+| `-p`, `--path`              | Specify a path to traverse all directories it contains for granular retention policies |                          |
+| `-e`, `--environment`       | Environment the backups are rotated in (used for Slack alert only)                     |                          |
+| `-t`, `--timestamp-pattern` | The timestamp pattern using a regex expression to parse out of filenames               |                          |
+| `-l`, `--log-file`          | Enable logging to this file path                                                       |                          |
+| `-I`, `--include`           | Include backups based on their directory path and/or filename (separated by comma)     |                          |
+| `-E`, `--exclude`           | Exclude backups based on their directory path and/or filename (separated by comma)     |                          |
+| `-H`, `--ssh-host`          | SSH host/alias to use                                                                  |                          |
+| `--ssh-sudo`                | Wrap SSH commands with sudo for escalated privileges                                   | `False`                  |
+| `--filestat`                | Use the file's last modified date instead of parsing timestamp from filename           | `False`                  |
+| `--prefer-recent`           | Keep the most recent backup in each time slot instead of oldest                        | `False`                  |
+| `--relaxed`                 | Time windows are not enforced                                                          | `False`                  |
+| `--utc`                     | Use UTC timezone instead of local machine's timezone for timestamps                    | `False`                  |
+| `--syslog`                  | Use syslog                                                                             | `False`                  |
+| `--debug`                   | Log debug messages that can help troubleshoot                                          | `False`                  |
+| `--delete`                  | Commit to deleting backups (DANGER ZONE)                                               | `False`                  |
+| `-V`, `--version`           | Display version and exit                                                               |                          |
+| `-h`, `--help`              | Show this help message and exit                                                        |                          |
 
 **Note**: Boolean options such as `--filestat` can be specified as `yes`/`no`, `true`/`false`, or `1`/`0` in the config
 

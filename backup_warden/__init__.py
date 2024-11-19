@@ -350,42 +350,54 @@ class BackupWarden:
         Updates Warden_Backups object with the backups it finds
         """
 
-        kwargs = {"Bucket": self.bucket, "Prefix": str(path)}
+        kwargs = {"Bucket": self.bucket, "Prefix": str(path), "Delimiter": "/"}
         paginator = self.s3_client.get_paginator("list_objects_v2")
         page_iterator = paginator.paginate(**kwargs, PaginationConfig={"PageSize": 500})
 
         for page in page_iterator:
+            objects = []
             if "Contents" in page:
-                for obj in page.get("Contents"):
+                # If the response includes "Contents", then the prefix has individual files
+                objects += page["Contents"]
+            if "CommonPrefixes" in page:
+                # If the response includes "CommonPrefixes", then the prefix has subfolders
+                objects += page["CommonPrefixes"]
+
+            for obj in objects:
+                if "Key" in obj:
                     backup_path = Path(obj["Key"])
                     backup_size = obj["Size"]
-                    backup_dir = str(backup_path.parent)
+                else:
+                    backup_path = Path(obj["Prefix"])
+                    backup_size = 0 # List subfolders as zero since it might take a long time to calculate actual size
 
-                    config = self.apply_config_to_path(backup_path)
-                    if config:
-                        if self.filter_exclude_include(backup_path, config.include_list, config.exclude_list):
-                            continue
+                backup_dir = str(backup_path.parent)
 
-                        last_modified = obj["LastModified"] if config.filestat else None
+                config = self.apply_config_to_path(backup_path)
+                if config:
+                    if self.filter_exclude_include(backup_path, config.include_list, config.exclude_list):
+                        continue
 
-                        try:
-                            timestamp = self.extract_timestamp(backup_path, config, last_modified)
-                        except AttributeError as e:
-                            raise Exception(f"Failed extracting timestamp from backup name: {e}")
+                    last_modified = obj["LastModified"] if config.filestat else None
 
-                        if timestamp:
-                            # Create or retrieve existing object for Warden_Backups
-                            warden_backups = Warden_Backups.initialize(backup_directory=backup_dir, config=config)
+                    try:
+                        timestamp = self.extract_timestamp(backup_path, config, last_modified)
+                    except AttributeError as e:
+                        raise Exception(f"Failed extracting timestamp from backup name: {e}")
 
-                            # Add the backup to it
-                            warden_backups.add_backup(
-                                Backup(
-                                    path_name=str(backup_path),
-                                    path_type="file",
-                                    timestamp=timestamp,
-                                    size=backup_size,
-                                )
+                    if timestamp:
+                        # Create or retrieve existing object for Warden_Backups
+                        warden_backups = Warden_Backups.initialize(backup_directory=backup_dir, config=config)
+
+                        # Add the backup to it
+                        warden_backups.add_backup(
+                            Backup(
+                                path_name=str(backup_path),
+                                path_type="file",
+                                timestamp=timestamp,
+                                size=backup_size,
                             )
+                        )
 
     def scan_for_backups_local(self, recursed_path):
         """
