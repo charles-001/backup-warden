@@ -355,21 +355,23 @@ class BackupWarden:
         page_iterator = paginator.paginate(**kwargs, PaginationConfig={"PageSize": 500})
 
         for page in page_iterator:
-            key = "Key"
-            objs = []
+            objects = []
             if "Contents" in page:
-                # If we get "Contents" back, then it's a listing of individual files
-                objs = page["Contents"]
-            elif "CommonPrefixes" in page:
-                # Otherwise, we got back a listing of prefixes in the directory and will treat those as the backups
-                key = "Prefix"
-                objs = page["CommonPrefixes"]
+                # If the response includes "Contents", then the prefix has individual files
+                objects += page["Contents"]
+            if "CommonPrefixes" in page:
+                # If the response includes "CommonPrefixes", then the prefix has subfolders
+                objects += page["CommonPrefixes"]
 
-            for obj in objs:
-                backup_path = Path(obj[key])
-                backup_size = 0
-                if "Size" in obj:
+            for obj in objects:
+                logger.info(obj)
+                if "Key" in obj:
+                    backup_path = Path(obj["Key"])
                     backup_size = obj["Size"]
+                else:
+                    backup_path = Path(obj["Prefix"])
+                    backup_size = 0 # List subfolders as zero since it might take a long time to calculate actual size
+
                 backup_dir = str(backup_path.parent)
 
                 config = self.apply_config_to_path(backup_path)
