@@ -328,6 +328,7 @@ def setup_options():
                 s3_endpoint_url=main_config.get("s3_endpoint_url"),
                 s3_access_key_id=main_config.get("s3_access_key_id"),
                 s3_secret_access_key=main_config.get("s3_secret_access_key"),
+                s3_session_token=main_config.get("s3_session_token"),
             )
             args.__dict__.update(config_options.__dict__)
     else:
@@ -342,6 +343,7 @@ def setup_options():
         "S3_ENDPOINT_URL": "s3_endpoint_url",
         "AWS_ACCESS_KEY_ID": "s3_access_key_id",
         "AWS_SECRET_ACCESS_KEY": "s3_secret_access_key",
+        "AWS_SESSION_TOKEN": "s3_session_token",
         "SLACK_WEBHOOK": "slack_webhook",
     }
 

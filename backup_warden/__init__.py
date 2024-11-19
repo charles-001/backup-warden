@@ -157,6 +157,7 @@ class BackupWarden:
     s3_endpoint_url: str = None
     s3_access_key_id: str = None
     s3_secret_access_key: str = None
+    s3_session_token: str = None
     slack_webhook: str = None
     ssh_host: str = None
     ssh_sudo: bool = False
@@ -311,6 +312,7 @@ class BackupWarden:
                 endpoint_url=self.s3_endpoint_url,
                 aws_access_key_id=self.s3_access_key_id,
                 aws_secret_access_key=self.s3_secret_access_key,
+                aws_session_token=self.s3_session_token
             )
 
         # We either use the path and traverse or loop through the config sections

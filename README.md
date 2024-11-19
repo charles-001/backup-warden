@@ -196,6 +196,7 @@ You can also set the following options using environment variables, which will o
 - `S3_ENDPOINT_URL`
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
+- `AWS_SESSION_TOKEN`
 - `SLACK_WEBHOOK`
 
 ### Not using `path`
