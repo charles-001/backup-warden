@@ -73,7 +73,7 @@ Using the `path` option provides granular control over retention policies and al
 
 `--path` is the same as using `path` under `[main]` section in config.
 
-**Note**: Specifying a `path` may result in a performance impact if there are a lot of non-backup directories/files within the specified path. This shouldn't be an issue though unless your setup is very abnormal. You can use `exclude_list` to help out if this is a scenario.
+**Note**: Specifying a `path` may result in a performance impact if there are a lot of non-backup directories/files within the specified path. This shouldn't be an issue though unless your setup is very abnormal. You can use `exclude_list` to assist in this scenario, along with `s3-only-prefixes` if you are working with S3 storage.
 
 #### Option: `timestamp-pattern`
 
