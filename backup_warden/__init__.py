@@ -364,7 +364,6 @@ class BackupWarden:
                 objects += page["CommonPrefixes"]
 
             for obj in objects:
-                logger.info(obj)
                 if "Key" in obj:
                     backup_path = Path(obj["Key"])
                     backup_size = obj["Size"]
