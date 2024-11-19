@@ -359,7 +359,7 @@ class BackupWarden:
             objs = []
             if "Contents" in page:
                 # If we get "Contents" back, then it's a listing of individual files
-                objs = page.Get("Contents")
+                objs = page["Contents"]
             elif "CommonPrefixes" in page:
                 # Otherwise, we got back a listing of prefixes in the directory and will treat those as the backups
                 key = "Prefix"
