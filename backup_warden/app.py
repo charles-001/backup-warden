@@ -255,6 +255,11 @@ def setup_options():
         help="Time windows are not enforced (see documentation for more information)",
     )
     parser.add_argument(
+        "--s3-only-prefixes",
+        action="store_true",
+        help="Only considers prefixes, not individual objects, for rotation",
+    )
+    parser.add_argument(
         "--utc", action="store_true", help="Use UTC timezone instead of local machine's timezone for timestamps"
     )
     parser.add_argument(
@@ -329,6 +334,7 @@ def setup_options():
                 s3_access_key_id=main_config.get("s3_access_key_id"),
                 s3_secret_access_key=main_config.get("s3_secret_access_key"),
                 s3_session_token=main_config.get("s3_session_token"),
+                s3_only_prefixes=main_config.get("s3_only_prefixes"),
             )
             args.__dict__.update(config_options.__dict__)
     else:
