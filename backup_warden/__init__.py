@@ -778,21 +778,27 @@ class BackupWarden:
                 # We bulk delete for S3 since it has better performance
                 if self.delete and s3_delete_list:
                     try:
-                        response = self.s3_client.delete_objects(Bucket=self.bucket, Delete={"Objects": s3_delete_list})
-                        if "Errors" in response:
-                            # Update the status for tabulate
-                            for rows in self.tabulate_rows:
-                                if rows[3] == "Deleted":
-                                    rows[3] = "Deleted (failed)"
-
-                            for error in response["Errors"]:
-                                logger.error(
-                                    f"Failed to delete backup {error['Key']}: {error['Code']} - {error['Message']}"
-                                )
-
-                            raise Exception("Failed to delete backups!")
+                        if self.s3_only_prefixes:
+                            # handle each item in s3_delete_list as a prefix and delete recursively
+                            for item in s3_delete_list:
+                                s3 = boto3.resource("s3")
+                                bucket = s3.Bucket(self.bucket)
+                                response = bucket.objects.filter(
+                                    Prefix=item["Key"]).delete()
+                                self.process_deletion_response(response)
+                        else:
+                            # delete_objects can only handle 1000 keys at a time, so we break the list into chunks and iterate over them
+                            for i in range(0, len(s3_delete_list), 1000):
+                                response = self.s3_client.delete_objects(
+                                    Bucket=self.bucket,
+                                    Delete={
+                                        "Objects": s3_delete_list[i:i + 1000]
+                                    })
+                                self.process_deletion_response(response)
                     except ClientError as e:
-                        raise Exception(f"Error deleting file '{backup_path}': {e.response['Error']['Message']}")
+                        raise Exception(
+                            f"Error deleting file '{backup_path}': {e.response['Error']['Message']}"
+                        )
 
             if path_backup_files_count:
                 self.tabulate_rows.append(["", "", "", ""])
@@ -859,6 +865,20 @@ class BackupWarden:
             total_size=convert_bytes(remaining_total_size),
             runtime=runtime,
         )
+
+    def process_deletion_response(self, response):
+        if "Errors" in response:
+            # Update the status for tabulate
+            for rows in self.tabulate_rows:
+                if rows[3] == "Deleted":
+                    rows[3] = "Deleted (failed)"
+
+            for error in response["Errors"]:
+                logger.error(
+                    f"Failed to delete backup {error['Key']}: {error['Code']} - {error['Message']}"
+                )
+
+            raise Exception("Failed to delete backups!")
 
 
 def parse_timestamp_frequency(value):
