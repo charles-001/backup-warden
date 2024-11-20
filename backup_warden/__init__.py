@@ -17,7 +17,7 @@ from datetime import datetime, timedelta, timezone
 from fnmatch import fnmatch
 from pathlib import Path
 from pprint import pformat
-from typing import List
+from typing import Dict, List
 
 import boto3
 from botocore.exceptions import ClientError
@@ -132,13 +132,12 @@ class Warden_Backups:
     config: Warden_Config
     backups: List[Backup] = field(default_factory=list)
 
-    paths = {}
+    def add_backup(self, backup: Backup):
+        """
+        Add a backup to the list of backups.
 
-    @classmethod
-    def initialize(cls, backup_directory, config):
-        return cls.paths.setdefault(backup_directory, cls(config))
-
-    def add_backup(self, backup):
+        :param backup: The backup to add.
+        """
         self.backups.append(backup)
 
 
@@ -162,6 +161,9 @@ class BackupWarden:
     slack_webhook: str = None
     ssh_host: str = None
     ssh_sudo: bool = False
+
+    # Storing all paths and their config/backups in this dictionary
+    paths: Dict[str, Warden_Backups] = field(default_factory=dict)
 
     max_backup_name_length: int = 0
     tabulate_rows: list = field(default_factory=list)
@@ -275,6 +277,20 @@ class BackupWarden:
         # No timestamp or file match for filestat found, indicating no relevant timestamp
         return None
 
+    def initialize_path(self, path: str, config: Warden_Config) -> Warden_Backups:
+        """
+        Initialize a path in the Warden_Backups object.
+
+        :param path: The path to initialize.
+        :param config: The configuration for the path.
+        :return: A Warden_Backups object.
+        """
+
+        if path not in self.paths:
+            self.paths[path] = Warden_Backups(config=config)
+
+        return self.paths[path]
+
     def collect_backups(self):
         """
         Collect the backups based on the specified source and configurations.
@@ -332,15 +348,15 @@ class BackupWarden:
 
         # Find the maximum backup name length to size the backup name column
         # for tabulate so all tables are the same size
-        if Warden_Backups.paths:
+        if self.paths:
             self.max_backup_name_length = max(
                 len(os.path.basename(backup.path_name))
-                for warden_backups in Warden_Backups.paths.values()
+                for warden_backups in self.paths.values()
                 for backup in warden_backups.backups
             )
 
         # Sort paths dictionary by key
-        return sorted(Warden_Backups.paths.items(), key=lambda x: x[0])
+        return sorted(self.paths.items(), key=lambda x: x[0])
 
     def scan_for_backups_s3(self, path):
         """
@@ -388,7 +404,7 @@ class BackupWarden:
 
                     if timestamp:
                         # Create or retrieve existing object for Warden_Backups
-                        warden_backups = Warden_Backups.initialize(backup_directory=backup_dir, config=config)
+                        warden_backups = self.initialize_path(path=backup_dir, config=config)
 
                         # Add the backup to it
                         warden_backups.add_backup(
@@ -445,7 +461,7 @@ class BackupWarden:
                     backup_size = os.path.getsize(backup_path)
 
                 # Create or retrieve existing object for Warden_Backups
-                warden_backups = Warden_Backups.initialize(backup_directory=backup_dir, config=config)
+                warden_backups = self.initialize_path(path=backup_dir, config=config)
 
                 # Add the backup to it
                 warden_backups.add_backup(
@@ -524,7 +540,7 @@ class BackupWarden:
                     continue
 
                 # Create or retrieve existing object for Warden_Backups
-                warden_backups = Warden_Backups.initialize(backup_directory=backup_dir, config=config)
+                warden_backups = self.initialize_path(path=backup_dir, config=config)
 
                 # Add the backup to it
                 warden_backups.add_backup(
@@ -813,8 +829,8 @@ class BackupWarden:
         remaining_total_size = total_backup_size - total_backup_deleted_size
         runtime = str(datetime.utcnow() - tool_start_time).split(".")[0]
 
-        if len(Warden_Backups.paths):
-            logger.info(f"{'Paths:':<12} {len(Warden_Backups.paths)}")
+        if len(self.paths):
+            logger.info(f"{'Paths:':<12} {len(self.paths)}")
             logger.info(f"{'Backups:':<12} {total_backup_files_count:<7} ({convert_bytes(total_backup_size)})")
             logger.info(
                 f"{'Deleted:':<12} {total_backup_deleted_file_count:<7} ({convert_bytes(total_backup_deleted_size)})"
