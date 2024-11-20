@@ -155,9 +155,8 @@ def main():
 
         if options["debug"]:
             logger.exception(e)
-            sys.exit(1)
-        else:
-            logger.critical(e)
+
+        logger.critical(e)
 
 
 def setup_options():
