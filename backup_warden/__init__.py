@@ -313,7 +313,7 @@ class BackupWarden:
                 endpoint_url=self.s3_endpoint_url,
                 aws_access_key_id=self.s3_access_key_id,
                 aws_secret_access_key=self.s3_secret_access_key,
-                aws_session_token=self.s3_session_token
+                aws_session_token=self.s3_session_token,
             )
 
         # We either use the path and traverse or loop through the config sections
@@ -370,7 +370,7 @@ class BackupWarden:
                     backup_size = obj["Size"]
                 else:
                     backup_path = Path(obj["Prefix"])
-                    backup_size = 0 # List subfolders as zero since it might take a long time to calculate actual size
+                    backup_size = 0  # List subfolders as zero since it might take a long time to calculate actual size
 
                 backup_dir = str(backup_path.parent)
 

@@ -77,6 +77,9 @@ def setup_logging(args):
     if args.log_file:
         logger.add(args.log_file, format=log_format, backtrace=True, level=log_level, colorize=False)
 
+    # Exit with a non-zero status code if a critical log message is emitted
+    logger.add(lambda _: sys.exit(1), level="CRITICAL")
+
 
 def check_for_update():
     # Query PyPI API to get the latest version
@@ -152,6 +155,7 @@ def main():
 
         if options["debug"]:
             logger.exception(e)
+            sys.exit(1)
         else:
             logger.critical(e)
 
@@ -211,7 +215,7 @@ def setup_options():
     )
     parser.add_argument(
         "-I",
-        "--include",
+        "--include-list",
         dest="include_list",
         type=str,
         default="",
@@ -219,7 +223,7 @@ def setup_options():
     )
     parser.add_argument(
         "-E",
-        "--exclude",
+        "--exclude-list",
         dest="exclude_list",
         type=str,
         default="",
@@ -312,11 +316,9 @@ def setup_options():
                     default_value = action.default
                     arg_value = getattr(args, action.dest)
                     if action.dest not in allowed_options and arg_value != default_value:
-                        sys.exit(
-                            logger.critical(
-                                f"Parameter '{arg_name}' is not allowed when a config file is used. "
-                                "You will need to set it there."
-                            )
+                        logger.critical(
+                            f"Parameter '{arg_name}' is not allowed when a config file is used. "
+                            "You will need to set it there."
                         )
 
             # Overwrite parameter values/defaults with config file values
@@ -339,10 +341,10 @@ def setup_options():
             args.__dict__.update(config_options.__dict__)
     else:
         if not args.path:
-            sys.exit(logger.critical("A path must be specified"))
+            logger.critical("A path must be specified")
 
     if args.source not in SOURCE_TYPES:
-        sys.exit(logger.critical(f"Source {args.source} is not valid! Choose from {SOURCE_TYPES}"))
+        logger.critical(f"Source {args.source} is not valid! Choose from {SOURCE_TYPES}")
 
     # Create dict that pairs an environment variable with args value
     env_variables = {

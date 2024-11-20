@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "backup_warden"
-version = "1.0.9"
+version = "1.0.10"
 description = "Streamline your backup management with ease and simplicity"
 authors = ["Charles Thompson <01charles.t@gmail.com>"]
 readme = "README.md"

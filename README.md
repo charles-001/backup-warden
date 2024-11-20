@@ -21,8 +21,8 @@ Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python
 | `-e`, `--environment`       | Environment the backups are rotated in (used for Slack alert only)                     |                          |
 | `-t`, `--timestamp-pattern` | The timestamp pattern using a regex expression to parse out of filenames               |                          |
 | `-l`, `--log-file`          | Enable logging to this file path                                                       |                          |
-| `-I`, `--include`           | Include backups based on their directory path and/or filename (separated by comma)     |                          |
-| `-E`, `--exclude`           | Exclude backups based on their directory path and/or filename (separated by comma)     |                          |
+| `-I`, `--include-list`      | Include backups based on their directory path and/or filename (separated by comma)     |                          |
+| `-E`, `--exclude-list`      | Exclude backups based on their directory path and/or filename (separated by comma)     |                          |
 | `-H`, `--ssh-host`          | SSH host/alias to use                                                                  |                          |
 | `--ssh-sudo`                | Wrap SSH commands with sudo for escalated privileges                                   | `False`                  |
 | `--filestat`                | Use the file's last modified date instead of parsing timestamp from filename           | `False`                  |
@@ -73,7 +73,7 @@ Using the `path` option provides granular control over retention policies and al
 
 `--path` is the same as using `path` under `[main]` section in config.
 
-**Note**: Specifying a `path` may result in a performance impact if there are a lot of non-backup directories/files within the specified path. This shouldn't be an issue though unless your setup is very abnormal. You can use `exclude_list` to assist in this scenario, along with `s3-only-prefixes` if you are working with S3 storage.
+**Note**: Specifying a `path` may result in a performance impact if there are a lot of non-backup directories/files within the specified path. This shouldn't be an issue though unless your setup is very abnormal. You can use `exclude-list` to assist in this scenario, along with `s3-only-prefixes` if you are working with S3 storage.
 
 #### Option: `timestamp-pattern`
 
@@ -128,7 +128,7 @@ For example, to exclude the `cluster1` from Backup Warden's operations, you can 
 
 To further expand the exclusion criteria, you can exclude backups from the year 2022 by using `--exclude-list="*cluster1*, *2022*"`.
 
-The same concept applies to the `exclude-list` option under each section in the config file:
+The same concept applies to the `exclude_list` option under each section in the config file:
 
 ```ini
 [/path/backups/*/logical]
