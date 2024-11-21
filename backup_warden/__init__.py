@@ -783,28 +783,22 @@ class BackupWarden:
                         for item in s3_delete_list:
                             try:
                                 # handle each item in s3_delete_list as a prefix and delete recursively
-                                response = bucket.objects.filter(
-                                    Prefix=item["Key"]).delete()
+                                response = bucket.objects.filter(Prefix=item["Key"]).delete()
                                 self.process_deletion_response(response)
                             except ClientError as e:
-                                raise Exception(
-                                    f"Error deleting objects with prefix {item['Key']}: {e}"
-                                )
+                                raise Exception(f"Error deleting objects with prefix {item['Key']}: {e}")
                     else:
-                        # delete_objects can only handle 1000 keys at a time, so we break the list into chunks and iterate over them
+                        # delete_objects can only handle 1000 keys at a time,
+                        # so we break the list into chunks and iterate over them
                         for i in range(0, len(s3_delete_list), 1000):
                             try:
                                 # Delete objects in chunks of 1000
                                 response = self.s3_client.delete_objects(
-                                    Bucket=self.bucket,
-                                    Delete={
-                                        "Objects": s3_delete_list[i:i + 1000]
-                                    })
+                                    Bucket=self.bucket, Delete={"Objects": s3_delete_list[i : i + 1000]}
+                                )
                                 self.process_deletion_response(response)
                             except ClientError as e:
-                                raise Exception(
-                                    f"Error deleting batch {i}-{i + 1000} of objects: {e}"
-                                )
+                                raise Exception(f"Error deleting batch {i}-{i + 1000} of objects: {e}")
 
             if path_backup_files_count:
                 self.tabulate_rows.append(["", "", "", ""])
@@ -880,9 +874,7 @@ class BackupWarden:
                     rows[3] = "Deleted (failed)"
 
             for error in response["Errors"]:
-                logger.error(
-                    f"Failed to delete backup {error['Key']}: {error['Code']} - {error['Message']}"
-                )
+                logger.error(f"Failed to delete backup {error['Key']}: {error['Code']} - {error['Message']}")
 
             raise Exception("Failed to delete backups!")
 
