@@ -84,7 +84,13 @@ def setup_logging(args):
 def check_for_update():
     # Query PyPI API to get the latest version
     url = f"https://pypi.org/pypi/{__package_name__}/json"
-    response = requests.get(url)
+    try:
+        response = requests.get(url)
+    except requests.exceptions.RequestException as e:
+        logger.warning(
+            f"Failed to retrieve package information from PyPI! URL: {url} - Exception: {e}"
+        )
+        return
 
     if response.status_code == 200:
         data = response.json()
@@ -110,7 +116,8 @@ def main():
     backup_warden = None
 
     try:
-        check_for_update()
+        if not options.pop("no_update_check"):
+            check_for_update()
 
         # Create rotation scheme and remove from options so they don't get sent to BackupWarden
         rotation_scheme = {
@@ -256,6 +263,11 @@ def setup_options():
         "--relaxed",
         action="store_true",
         help="Time windows are not enforced (see documentation for more information)",
+    )
+    parser.add_argument(
+        "--no-update-check",
+        action="store_true",
+        help="Do not check for newer versions on pypi",
     )
     parser.add_argument(
         "--s3-only-prefixes",
