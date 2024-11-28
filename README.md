@@ -163,6 +163,13 @@ poetry install
 poetry run backup-warden --config config/example.ini
 ```
 
+Using Docker:
+```shell
+docker build -t backup-warden .
+
+docker run --volume=/my/backup/dir:/my/backup/dir --volume=$PWD/config:/config backup-warden --config /config/example.ini
+```
+
 ## Configuration
 
 Backup Warden offers two methods for setting it up: parameters and a config file. The recommended approach is to use a config file, which allows customization of directory paths and their respective retention policies. You can find examples of the config file [here](https://github.com/charles-001/backup-warden/tree/main/example_configs)
