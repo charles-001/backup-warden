@@ -86,9 +86,9 @@ def check_for_update():
     url = f"https://pypi.org/pypi/{__package_name__}/json"
     try:
         response = requests.get(url)
-    except requests.exceptions.RequestException as e:
-        logger.warning(
-            f"Failed to retrieve package information from PyPI! URL: {url} - Exception: {e}"
+    except Exception as e:
+        logger.error(
+            f"Failed to retrieve package information from PyPI to check for an update! URL: {url} - Exception: {e}"
         )
         return
 
@@ -106,8 +106,8 @@ def check_for_update():
             )
     else:
         logger.error(
-            f"Failed to retrieve package information from PyPI! URL: {url} - Code: {response.status_code} - Response:"
-            f" {response.json()}"
+            f"Failed to retrieve package information from PyPI to check for an update! URL: {url} - "
+            f"Code: {response.status_code} - Response: {response}"
         )
 
 
@@ -267,7 +267,7 @@ def setup_options():
     parser.add_argument(
         "--no-update-check",
         action="store_true",
-        help="Do not check for newer versions on pypi",
+        help="Do not check for newer versions on PyPI",
     )
     parser.add_argument(
         "--s3-only-prefixes",
