@@ -45,6 +45,10 @@ def setup_logging(args):
     log_level = "INFO"
     if args.debug:
         log_level = "DEBUG"
+    elif args.silent:
+        log_level = "WARNING"
+    elif args.print_deleted or args.print_not_deleted:
+        log_level = "CRITICAL"
 
     # Add terminal logging
     logger.add(
@@ -289,10 +293,28 @@ def setup_options():
         help="Log debug messages that can help troubleshoot",
     )
     parser.add_argument(
+        "--silent",
+        action="store_true",
+        help="Suppress output unless there is a warning or error",
+    )
+    parser.add_argument(
         "--delete",
         action="store_true",
         help="Commit to deleting backups (DANGER ZONE)",
     )
+
+    print_group = parser.add_mutually_exclusive_group()
+    print_group.add_argument(
+        "--print-deleted",
+        action="store_true",
+        help="Print list of files that would be deleted (one per line) for use with other tools",
+    )
+    print_group.add_argument(
+        "--print-not-deleted",
+        action="store_true",
+        help="Print list of files that would be preserved (one per line) for use with other tools",
+    )
+
     parser.add_argument("-V", "--version", action="version", version=__version__, help="Display version and exit")
 
     retention_group = parser.add_argument_group("Retention options")
@@ -319,7 +341,7 @@ def setup_options():
     if os.path.isfile(args.config_file):
         main_config = load_config_file(configuration_file=args.config_file, app_config=True)
         if main_config:
-            allowed_options = {"config_file", "delete", "debug"}
+            allowed_options = {"config_file", "delete", "debug", "silent", "print_deleted", "print_not_deleted"}
             # We find exactly what parameters are actually passed and fail if they're used when --config is passed
             for action in parser._get_optional_actions():
                 if isinstance(action, (argparse._StoreAction, argparse._StoreTrueAction)):

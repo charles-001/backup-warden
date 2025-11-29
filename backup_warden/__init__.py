@@ -152,6 +152,9 @@ class BackupWarden:
     bucket: str = None
     delete: bool = False
     debug: bool = False
+    silent: bool = False
+    print_deleted: bool = False
+    print_not_deleted: bool = False
     log_file: str = None
     s3_endpoint_url: str = None
     s3_access_key_id: str = None
@@ -187,7 +190,9 @@ class BackupWarden:
 
         table = tabulate(self.tabulate_rows, table_columns, tablefmt="rounded_outline") + "\n"
 
-        print(table)
+        # Only print table if not in silent mode
+        if not self.silent:
+            print(table)
 
         # Write to log file. Couldn't use loguru for logging to a file due to message being too long
         if self.log_file:
@@ -344,7 +349,9 @@ class BackupWarden:
             elif self.source == SOURCE_SSH:
                 self.scan_for_backups_ssh(path)
 
-        print("")
+        # Don't print empty line when using print flags
+        if not (self.print_deleted or self.print_not_deleted):
+            print("")
 
         # Find the maximum backup name length to size the backup name column
         # for tabulate so all tables are the same size
@@ -661,13 +668,17 @@ class BackupWarden:
         """
         Rotate the backups in a directory according to a flexible rotation scheme
         """
-        tool_start_time = datetime.utcnow()
+        tool_start_time = datetime.now(timezone.utc)
 
         total_backup_size = 0
         total_backup_files_count = 0
         total_backup_deleted_size = 0
         total_backup_deleted_file_count = 0
         no_backups_24hrs = []
+
+        # Lists to collect filenames for --print-deleted and --print-not-deleted
+        deleted_files = []
+        not_deleted_files = []
 
         for path_name, warden_backups in self.collect_backups():
             warden_backups: Warden_Backups
@@ -731,6 +742,10 @@ class BackupWarden:
                         matching_types = "', '".join(backups_to_preserve[backup_object])
                         period = "period" if len(backups_to_preserve[backup_object]) == 1 else "periods"
                         backup_status = f"Preserving (matches '{matching_types}' retention {period})"
+
+                        # Collect for --print-not-deleted
+                        if self.print_not_deleted:
+                            not_deleted_files.append(backup_path)
                     else:
                         # Delete!
                         if self.delete:
@@ -766,6 +781,10 @@ class BackupWarden:
 
                         else:
                             backup_status = "Deleted (skipped)"
+
+                        # Collect for --print-deleted
+                        if self.print_deleted:
+                            deleted_files.append(backup_path)
 
                         path_backup_deleted_size += backup_size
                         path_backup_deleted_files_count += 1
@@ -822,9 +841,12 @@ class BackupWarden:
                         ),
                     ]
                 )
-                self.print_tabulate()
+                # Don't print table when using print flags
+                if not (self.print_deleted or self.print_not_deleted):
+                    self.print_tabulate()
             else:
-                print()
+                if not (self.print_deleted or self.print_not_deleted):
+                    print()
 
             total_backup_size += path_backup_size
             total_backup_files_count += path_backup_files_count
@@ -833,7 +855,7 @@ class BackupWarden:
 
         remaining_total_files = total_backup_files_count - total_backup_deleted_file_count
         remaining_total_size = total_backup_size - total_backup_deleted_size
-        runtime = str(datetime.utcnow() - tool_start_time).split(".")[0]
+        runtime = str(datetime.now(timezone.utc) - tool_start_time).split(".")[0]
 
         if len(self.paths):
             logger.info(f"{'Paths:':<12} {len(self.paths)}")
@@ -855,16 +877,26 @@ class BackupWarden:
         else:
             logger.info("No backups were found")
 
-        slack_notify(
-            webhook_url=self.slack_webhook,
-            environment=self.environment,
-            source=self.source,
-            backup_status="success",
-            backups_deleted=total_backup_deleted_file_count,
-            size_deleted=convert_bytes(total_backup_deleted_size),
-            total_size=convert_bytes(remaining_total_size),
-            runtime=runtime,
-        )
+        # Don't send Slack notification when using print flags
+        if not (self.print_deleted or self.print_not_deleted):
+            slack_notify(
+                webhook_url=self.slack_webhook,
+                environment=self.environment,
+                source=self.source,
+                backup_status="success",
+                backups_deleted=total_backup_deleted_file_count,
+                size_deleted=convert_bytes(total_backup_deleted_size),
+                total_size=convert_bytes(remaining_total_size),
+                runtime=runtime,
+            )
+
+        # Print filenames when using --print-deleted or --print-not-deleted
+        if self.print_deleted:
+            for filename in deleted_files:
+                print(filename)
+        elif self.print_not_deleted:
+            for filename in not_deleted_files:
+                print(filename)
 
     def process_deletion_response(self, response):
         if "Errors" in response:

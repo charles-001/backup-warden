@@ -32,7 +32,10 @@ Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python
 | `--utc`                     | Use UTC timezone instead of local machine's timezone for timestamps                    | `False`                  |
 | `--syslog`                  | Use syslog                                                                             | `False`                  |
 | `--debug`                   | Log debug messages that can help troubleshoot                                          | `False`                  |
+| `--silent`                  | Suppress output unless there is a warning or error                                     | `False`                  |
 | `--delete`                  | Commit to deleting backups (DANGER ZONE)                                               | `False`                  |
+| `--print-deleted`           | Print list of files that would be deleted     | `False`                  |
+| `--print-not-deleted`       | Print list of files that would be preserved  | `False`                  |
 | `-V`, `--version`           | Display version and exit                                                               |                          |
 | `-h`, `--help`              | Show this help message and exit                                                        |                          |
 
@@ -119,6 +122,26 @@ Backup Warden offers the `--relaxed` option to modify its default rotation behav
 #### Option: `s3-only-prefixes`
 
 With the `--s3-only-prefixes` option, only prefixes (not individual objects) will be considered for rotation. This drastically improves performance when the bucket contains a large number of objects, but only works if your backups are nested under timestamped prefixes.
+
+#### Option: `silent`
+
+The `--silent` flag suppresses all informational output, showing only warnings and errors. This is ideal for automated scripts and scheduled jobs where you only want to see output when something goes wrong.
+
+#### Option: `print-deleted` / `print-not-deleted`
+
+These mutually exclusive options output only filenames (one per line), suppressing all other output including tables and INFO messages.
+
+**`--print-deleted`**: Prints the list of files that would be (or were) deleted:
+```bash
+backup-warden --hourly 6 -p /backups --print-deleted
+```
+
+**`--print-not-deleted`**: Prints the list of files that would be preserved:
+```bash
+backup-warden --hourly 6 -p /backups --print-not-deleted
+```
+
+The clean, line-by-line output format makes it easy to save to a file or use in automated workflows
 
 #### Option: `include-list`/`exclude-list`
 

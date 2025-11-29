@@ -7,9 +7,9 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-boto3 = "^1.40.53"
+boto3 = "^1.41.5"
 tabulate = "^0.9.0"
-slack-sdk = "^3.27.1"
+slack-sdk = "^3.39.0"
 loguru = "^0.7.3"
 configparser = "^7.2.0"
 property-manager = "^3.0"
@@ -21,9 +21,24 @@ packaging = "^25.0"
 slack = "^0.0.2"
 property = "^2.6.2"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.4"
+pytest-cov = "^7.0.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 backup-warden = "backup_warden.app:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py", "*_testing.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+]
