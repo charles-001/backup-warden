@@ -442,6 +442,40 @@ class TestOutputFlags:
         # Should still show ERROR messages
         assert "[ERROR]" in result.stdout
 
+        # Verify output only contains ERROR lines (no extra newlines or spacing)
+        lines = [line for line in result.stdout.strip().split('\n') if line.strip()]
+        assert all('[ERROR]' in line for line in lines), "Silent mode should only output ERROR lines"
+
+    def test_silent_with_no_recency_check_produces_no_output(self, tmp_path, run_cli):
+        """Test that --silent with --no-recency-check produces absolutely no output."""
+        backups = ["backup-2016-01-10_21-15-00", "backup-2016-01-10_21-30-00"]
+        create_backup_dirs(tmp_path, backups)
+
+        result = run_cli([f"--path={tmp_path}", "--hourly=1", "--silent", "--no-recency-check"])
+
+        assert result.returncode == 0
+        # Should have absolutely no output
+        assert result.stdout.strip() == "", "Silent mode with no-recency-check should produce zero output"
+
+    def test_no_recency_check_flag(self, tmp_path, run_cli):
+        """Test that --no-recency-check suppresses 24-hour recency warnings."""
+        # Create old backups (more than 24 hours old)
+        backups = ["backup-2016-01-10_21-15-00", "backup-2016-01-10_21-30-00"]
+        create_backup_dirs(tmp_path, backups)
+
+        # With the flag, should NOT show ERROR about old backups
+        result_with_flag = run_cli([f"--path={tmp_path}", "--hourly=1", "--no-recency-check"])
+        assert result_with_flag.returncode == 0
+        assert "No backup taken for path" not in result_with_flag.stdout
+        assert "in the past 24 hours" not in result_with_flag.stdout
+
+        # Without the flag, should show ERROR about old backups
+        result_without_flag = run_cli([f"--path={tmp_path}", "--hourly=1"])
+        assert result_without_flag.returncode == 0
+        assert "No backup taken for path" in result_without_flag.stdout
+        assert "in the past 24 hours" in result_without_flag.stdout
+        assert "[ERROR]" in result_without_flag.stdout
+
     def test_print_deleted_flag(self, tmp_path, run_cli):
         """Test that --print-deleted prints only files to be deleted."""
         backups = [

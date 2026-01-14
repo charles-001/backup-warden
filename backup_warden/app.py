@@ -302,6 +302,11 @@ def setup_options():
         action="store_true",
         help="Commit to deleting backups (DANGER ZONE)",
     )
+    parser.add_argument(
+        "--no-recency-check",
+        action="store_true",
+        help="Skip the 24-hour recency check for backups",
+    )
 
     print_group = parser.add_mutually_exclusive_group()
     print_group.add_argument(

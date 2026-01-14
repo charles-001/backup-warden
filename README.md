@@ -34,6 +34,7 @@ Thanks to xolox for his work on [rotate-backups](https://github.com/xolox/python
 | `--debug`                   | Log debug messages that can help troubleshoot                                          | `False`                  |
 | `--silent`                  | Suppress output unless there is a warning or error                                     | `False`                  |
 | `--delete`                  | Commit to deleting backups (DANGER ZONE)                                               | `False`                  |
+| `--no-recency-check`        | Skip the 24-hour recency check for backups                                             | `False`                  |
 | `--print-deleted`           | Print list of files that would be deleted     | `False`                  |
 | `--print-not-deleted`       | Print list of files that would be preserved  | `False`                  |
 | `-V`, `--version`           | Display version and exit                                                               |                          |
@@ -126,6 +127,23 @@ With the `--s3-only-prefixes` option, only prefixes (not individual objects) wil
 #### Option: `silent`
 
 The `--silent` flag suppresses all informational output, showing only warnings and errors. This is ideal for automated scripts and scheduled jobs where you only want to see output when something goes wrong.
+
+#### Option: `no-recency-check`
+
+By default, Backup Warden warns when the most recent backup in a path is older than 24 hours. This helps catch broken backup jobs or missing backups. However, this check may not be appropriate for all use cases:
+
+- Weekly or monthly backup schedules
+- Archived backup sets that are no longer actively maintained
+- Testing or development environments
+- Ad-hoc backups with irregular schedules
+
+The `--no-recency-check` flag disables this 24-hour check, suppressing both the ERROR message and the final summary of stale paths:
+
+```bash
+backup-warden --hourly 6 -p /old-backups --no-recency-check --delete
+```
+
+**When to use**: Use this flag when you're intentionally working with old backups or running backups on a schedule longer than 24 hours. For most production backup jobs with daily or more frequent backups, keeping the default recency check is recommended.
 
 #### Option: `print-deleted` / `print-not-deleted`
 

@@ -164,6 +164,7 @@ class BackupWarden:
     slack_webhook: str = None
     ssh_host: str = None
     ssh_sudo: bool = False
+    no_recency_check: bool = False
 
     # Storing all paths and their config/backups in this dictionary
     # Key is a tuple of (path, config_name) to support multiple configs per directory
@@ -353,8 +354,8 @@ class BackupWarden:
             elif self.source == SOURCE_SSH:
                 self.scan_for_backups_ssh(path)
 
-        # Don't print empty line when using print flags
-        if not (self.print_deleted or self.print_not_deleted):
+        # Don't print empty line when using print flags or silent mode
+        if not (self.print_deleted or self.print_not_deleted or self.silent):
             print("")
 
         # Find the maximum backup name length to size the backup name column
@@ -714,7 +715,9 @@ class BackupWarden:
                 self.apply_rotation_scheme(backups_by_frequency, most_recent_backup.timestamp)
                 backups_to_preserve = self.find_preservation_criteria(backups_by_frequency)
 
-                if most_recent_backup.timestamp < (datetime.now(timezone.utc) - timedelta(1)):
+                if not self.no_recency_check and most_recent_backup.timestamp < (
+                    datetime.now(timezone.utc) - timedelta(1)
+                ):
                     no_backups_24hrs.append(path_name)
                     warning_message = (
                         f"No backup taken for path {path_name} in the past 24 hours! Most recent backup:"
@@ -852,7 +855,7 @@ class BackupWarden:
                 if not (self.print_deleted or self.print_not_deleted):
                     self.print_tabulate()
             else:
-                if not (self.print_deleted or self.print_not_deleted):
+                if not (self.print_deleted or self.print_not_deleted or self.silent):
                     print()
 
             total_backup_size += path_backup_size
@@ -873,7 +876,7 @@ class BackupWarden:
             logger.info(f"{'Remaining:':<12} {remaining_total_files:<7} ({convert_bytes(remaining_total_size)})")
             logger.info(f"{'Runtime:':<12} {runtime}")
 
-            if no_backups_24hrs:
+            if not self.no_recency_check and no_backups_24hrs:
                 path_spelling = "paths haven't" if len(no_backups_24hrs) > 1 else "path hasn't"
                 logger.info(f"{len(no_backups_24hrs)} {path_spelling} had a backup in the past 24 hours:")
 
