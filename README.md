@@ -306,6 +306,46 @@ By defining `/path/backups/*/logical` as a config section, Backup Warden acknowl
 
 When a retention policy is set for a broader path, such as `path/backups`, it will not override or take precedence over a more specific path like `/path/backups/cluster1/logical`. Backup Warden's scanning and rotation operations respect the defined hierarchy, ensuring that retention policies are accurately applied to the corresponding backup directories without unintentionally affecting others.
 
+### Multiple Policies for the Same Directory
+
+Backup Warden supports applying different retention policies to different file patterns within the same directory by using `include_list` to filter backups. This is particularly useful when you have different types of backups (e.g., full and incremental) in the same location and want to apply different retention rules to each type.
+
+**Use case**: You have both full and incremental database backups in the same directory, and you want to keep full backups longer than incremental ones.
+
+**Directory structure**
+```shell
+/path/to/backup/full-2024-01-01.zip
+/path/to/backup/full-2024-01-02.zip
+/path/to/backup/inc-2024-01-01.zip
+/path/to/backup/inc-2024-01-02.zip
+```
+
+**Config**
+```ini
+[main]
+path = /path/to/backup
+source = local
+
+[/path/to/backup/full*]
+daily = 7
+weekly = 4
+monthly = 12
+yearly = always
+include_list = *full*
+
+[/path/to/backup/inc*]
+daily = 3
+include_list = *inc*
+```
+
+In this example:
+- Full backups matching `*full*` will be kept according to the first policy (7 daily, 4 weekly, 12 monthly, all yearly)
+- Incremental backups matching `*inc*` will be kept according to the second policy (3 daily only)
+- The wildcard section names (e.g., `/path/to/backup/full*`) help organize the config but don't affect matching
+- The `include_list` option is critical - it ensures each policy only applies to the appropriate backup files
+
+**Important**: Without using `include_list`, only one policy would be applied to all backups in the directory. The `include_list` filter ensures that each retention policy processes only its intended backup files.
+
 
 ## Alerting
 

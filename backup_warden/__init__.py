@@ -166,7 +166,8 @@ class BackupWarden:
     ssh_sudo: bool = False
 
     # Storing all paths and their config/backups in this dictionary
-    paths: Dict[str, Warden_Backups] = field(default_factory=dict)
+    # Key is a tuple of (path, config_name) to support multiple configs per directory
+    paths: Dict[tuple, Warden_Backups] = field(default_factory=dict)
 
     max_backup_name_length: int = 0
     tabulate_rows: list = field(default_factory=list)
@@ -291,17 +292,20 @@ class BackupWarden:
         :return: A Warden_Backups object.
         """
 
-        if path not in self.paths:
-            self.paths[path] = Warden_Backups(config=config)
+        # Use a tuple of (path, config_name) as the key to support multiple configs per directory
+        path_key = (path, config.config_name)
+        if path_key not in self.paths:
+            self.paths[path_key] = Warden_Backups(config=config)
 
-        return self.paths[path]
+        return self.paths[path_key]
 
     def collect_backups(self):
         """
         Collect the backups based on the specified source and configurations.
 
-        :return: A dictionary containing the collected backup paths in Path format as keys and backups along with
-        the path configs as values
+        :return: A sorted list of tuples where each tuple contains:
+                 - A tuple key of (path, config_name)
+                 - A Warden_Backups object containing backups and their config
         """
 
         # Connect to our sources
@@ -680,8 +684,11 @@ class BackupWarden:
         deleted_files = []
         not_deleted_files = []
 
-        for path_name, warden_backups in self.collect_backups():
+        for path_key, warden_backups in self.collect_backups():
             warden_backups: Warden_Backups
+
+            # Unpack the path_key tuple to get the actual path and config name
+            path_name, config_name = path_key
 
             path_backup_size = 0
             path_backup_files_count = 0
@@ -867,8 +874,6 @@ class BackupWarden:
             logger.info(f"{'Runtime:':<12} {runtime}")
 
             if no_backups_24hrs:
-                print("")
-
                 path_spelling = "paths haven't" if len(no_backups_24hrs) > 1 else "path hasn't"
                 logger.info(f"{len(no_backups_24hrs)} {path_spelling} had a backup in the past 24 hours:")
 

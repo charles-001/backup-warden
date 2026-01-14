@@ -585,6 +585,70 @@ class TestConfigFile:
         preserved_backups = set(os.listdir(tmp_path))
         assert preserved_backups == expected_preserved
 
+    def test_multiple_policies_same_directory(self, tmp_path, config_file, run_cli):
+        """Test multiple retention policies for different file patterns in the same directory."""
+        # Create backups with different prefixes (full and incremental)
+        full_backups = [
+            "full-2024-01-01@10:00",
+            "full-2024-01-02@10:00",
+            "full-2024-01-03@10:00",
+            "full-2024-01-04@10:00",
+            "full-2024-01-05@10:00",
+            "full-2024-01-06@10:00",
+            "full-2024-01-07@10:00",
+        ]
+        inc_backups = [
+            "inc-2024-01-01@10:00",
+            "inc-2024-01-02@10:00",
+            "inc-2024-01-03@10:00",
+            "inc-2024-01-04@10:00",
+            "inc-2024-01-05@10:00",
+            "inc-2024-01-06@10:00",
+            "inc-2024-01-07@10:00",
+        ]
+        all_backups = full_backups + inc_backups
+
+        # Expected: Keep 2 daily for full backups, 5 daily for inc backups
+        expected_preserved = {
+            "full-2024-01-06@10:00",  # daily (2nd most recent)
+            "full-2024-01-07@10:00",  # daily (most recent)
+            "inc-2024-01-03@10:00",   # daily (5th most recent)
+            "inc-2024-01-04@10:00",   # daily (4th most recent)
+            "inc-2024-01-05@10:00",   # daily (3rd most recent)
+            "inc-2024-01-06@10:00",   # daily (2nd most recent)
+            "inc-2024-01-07@10:00",   # daily (most recent)
+            "backup_warden.ini",
+        }
+
+        # Create config with two sections for the same directory path
+        parser = ConfigParser()
+        parser["main"] = {"path": str(tmp_path), "source": "local"}
+
+        # Full backup policy - keep 2 daily backups
+        parser[f"{tmp_path}/full*"] = {
+            "hourly": "0",
+            "daily": "2",
+            "include_list": "*full*",
+        }
+
+        # Incremental backup policy - keep 5 daily backups
+        parser[f"{tmp_path}/inc*"] = {
+            "hourly": "0",
+            "daily": "5",
+            "include_list": "*inc*",
+        }
+
+        with open(config_file, "w") as f:
+            parser.write(f)
+
+        create_backup_dirs(tmp_path, all_backups)
+
+        result = run_cli(["--delete", f"--config={config_file}"])
+
+        assert result.returncode == 0
+        preserved_backups = set(os.listdir(tmp_path))
+        assert preserved_backups == expected_preserved, f"Expected: {expected_preserved}, Got: {preserved_backups}"
+
 
 class TestUnixTimestamp:
     """Test Unix timestamp pattern support."""
